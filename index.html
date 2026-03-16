@@ -13,48 +13,34 @@
     }
   }
   </script>
-</head>
-<body>
+  <style>
+    /* Hero page overrides — white text over dark 3D background */
+    #hero-layer .nav-logo,
+    #hero-layer .nav-links a,
+    #hero-layer .hero-label,
+    #hero-layer .hero-name,
+    #hero-layer .hero-tagline,
+    #hero-layer .hero-scroll { color: #ffffff; }
 
-  <!-- LAYER 1: 3D background -->
-  <div id="hyperspeed-container" style="
-    position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
-  "></div>
+    #hero-layer .nav-logo span { color: #d45a28; }
 
-  <!-- LAYER 2: everything else on top -->
-  <div style="position: relative; z-index: 1;">
+    #hero-layer nav {
+      background: rgba(0, 0, 0, 0.35);
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
 
-    <nav> ... </nav>
+    #hero-layer .theme-toggle {
+      color: rgba(255,255,255,0.6);
+      border-color: rgba(255,255,255,0.2);
+    }
+    #hero-layer .theme-toggle:hover { color: #fff; border-color: #fff; }
 
-    <main>
-      <section class="hero" style="position:relative;">
-        <p class="hero-label">// Developer &amp; AI Enthusiast</p>
+    #hero-layer .btn-outline {
+      color: #fff;
+      border-color: rgba(255,255,255,0.35);
+    }
+    #hero-layer .btn-outline:hover { border-color: #fff; }
 
-        <h1 class="hero-name" data-blur-text data-blur-by="words" 
-            data-blur-dir="top" data-blur-delay="120">
-          Kshitij Singh
-        </h1>
-
-        <p class="hero-tagline" data-blur-text data-blur-by="words"
-           data-blur-dir="bottom" data-blur-delay="80">
-          in love with learning
-        </p>
-
-        <div class="hero-cta">
-          <a href="projects.html" class="btn-primary">View My Work</a>
-          <a href="about.html" class="btn-outline">About Me</a>
-        </div>
-        <div class="hero-scroll" style="position:absolute;">scroll</div>
-      </section>
-    </main>
-
-    <footer> ... </footer>
-
-  </div>
-
-  <script src="script.js"></script>
-  <script type="module" src="hyperspeed.js"></script>
-</body>
-</html>
+    #hero-layer .footer-text { color: rgba(255,255,255,0.35); }
+    #hero-layer .site-footer { border-top-color: rgba(255,255,255,0.08); }
+  </style>

@@ -66,39 +66,3 @@ document.querySelectorAll('.resume-btn, .resume-link').forEach(btn => {
     alert('Resume coming soon — check back later!');
   });
 });
-
-
-// ----edit---
-function initBlurText() {
-  document.querySelectorAll('[data-blur-text]').forEach(el => {
-    const text      = el.textContent.trim();
-    const by        = el.dataset.blurBy || 'words';       // 'words' or 'chars'
-    const direction = el.dataset.blurDir || 'top';        // 'top' or 'bottom'
-    const delay     = parseInt(el.dataset.blurDelay) || 120; // ms between each word/char
-
-    const segments = by === 'words' ? text.split(' ') : text.split('');
-    el.textContent = '';
-    el.classList.add('blur-text-wrapper');
-
-    segments.forEach((seg, i) => {
-      const span = document.createElement('span');
-      span.classList.add('blur-text-word');
-      span.textContent = seg === ' ' ? '\u00A0' : seg;
-      if (by === 'words' && i < segments.length - 1) span.textContent += '\u00A0';
-      el.appendChild(span);
-    });
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      el.querySelectorAll('.blur-text-word').forEach((span, i) => {
-        span.style.animationDelay = `${(i * delay) / 800}s`;
-        span.classList.add(direction === 'top' ? 'animate-top' : 'animate-bottom');
-      });
-      observer.unobserve(el);
-    }, { threshold: 0.1 });
-
-    observer.observe(el);
-  });
-}
-
-initBlurText();
