@@ -246,6 +246,33 @@ main { padding-top: 80px; }
 .project-card:hover:not(.placeholder) .project-arrow {
   transform: translate(4px, -4px); color: var(--accent);
 }
+.project-actions {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-top: 1rem;
+}
+.project-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.08em;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all var(--transition);
+  cursor: pointer; background: transparent;
+}
+.project-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.project-btn.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.project-btn.primary:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
 
 /* ── SKILLS ── */
 .skills-grid {
@@ -277,6 +304,29 @@ main { padding-top: 80px; }
   height: 100%; background: var(--accent);
   width: 0; transition: width 1.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.skill-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.skill-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 0.28rem 0.7rem;
+  transition: all var(--transition);
+}
+.skill-category:hover .skill-chip {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.skill-category.learning { border-style: dashed; }
+.skill-category.learning .skill-cat-name { color: var(--text-muted); }
+.skill-category.learning .skill-chip { border-style: dashed; }
+.skill-category.learning:hover .skill-chip { border-style: dashed; }
+
+/* wide category spans full width */
+.skill-category.full-width { grid-column: 1 / -1; }
 
 /* ── FOOTER ── */
 .site-footer {

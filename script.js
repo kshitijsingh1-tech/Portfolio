@@ -220,11 +220,17 @@ document.querySelectorAll('.resume-btn, .resume-link').forEach(btn => {
     gsap.to(cursor, { x: mouseX, y: mouseY, duration: 0.1, ease: 'power3.out' });
 
     // find nearest cursor-target that the dot is actually on (or very close to)
+    // When multiple targets have the same distance (e.g. a button inside a card),
+    // prefer the smallest element so inner elements always win over their parents.
     const allTargets = document.querySelectorAll('.cursor-target');
-    let closest = null, closestDist = Infinity;
+    let closest = null, closestDist = Infinity, closestArea = Infinity;
     allTargets.forEach(el => {
-      const dist = distToRect(mouseX, mouseY, el.getBoundingClientRect());
-      if (dist < closestDist) { closestDist = dist; closest = el; }
+      const rect = el.getBoundingClientRect();
+      const dist = distToRect(mouseX, mouseY, rect);
+      const area = rect.width * rect.height;
+      if (dist < closestDist || (dist === closestDist && area < closestArea)) {
+        closestDist = dist; closestArea = area; closest = el;
+      }
     });
 
     if (closest && closestDist <= SNAP_THRESHOLD) {
