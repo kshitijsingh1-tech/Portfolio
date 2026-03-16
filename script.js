@@ -67,7 +67,7 @@ document.querySelectorAll('.resume-btn, .resume-link').forEach(btn => {
   });
 });
 
-// ── TARGET CURSOR (GSAP + PROXIMITY SNAP + ORBITAL SPIN) ──
+// ── TARGET CURSOR (GSAP — FERRIS WHEEL SPIN + PROXIMITY SNAP) ──
 (function initCursor() {
   const isMobile =
     (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 768) ||
@@ -96,28 +96,43 @@ document.querySelectorAll('.resume-btn, .resume-link').forEach(btn => {
   const corners = Array.from(cursor.querySelectorAll('.target-cursor-corner'));
 
   // ── config ──
-  const ORBIT_RADIUS   = 22;    // px — orbit circle radius when idle
-  const SPIN_SPEED     = 1.2;   // rotations per second
-  const BORDER         = 4;     // px padding around snapped element
-  const CORNER_SIZE    = 12;    // px corner bracket size
-  const PROXIMITY      = 80;    // px distance to trigger snap
-  const RELEASE_BUFFER = 20;    // extra px hysteresis before releasing
+  const SPIN_DURATION  = 2;    // seconds per full rotation
+  const ORBIT          = 12;   // px — distance from dot centre to each corner
+  const BORDER         = 3;    // px padding around snapped element
+  const CORNER_SIZE    = 8;    // px
+  const SNAP_THRESHOLD = 12;   // px — snap when corners first reach the element (= ORBIT)
+  const RELEASE_BUFFER = 8;    // px — release once dot moves this far outside
 
   // ── state ──
-  let mouseX = window.innerWidth  / 2;
-  let mouseY = window.innerHeight / 2;
-  let angle       = 0;          // current orbital angle in radians
-  let lastTime    = performance.now();
-  let isSnapped   = false;
-  let activeTarget = null;
-  let snapTickerFn = null;
+  let mouseX        = window.innerWidth  / 2;
+  let mouseY        = window.innerHeight / 2;
+  let spinTl        = null;
+  let isSnapped     = false;
+  let activeTarget  = null;
   let resumeTimeout = null;
 
-  // each corner starts 90° apart on the circle
-  // corner order: tl=0°, tr=90°, br=180°, bl=270°
-  const OFFSETS = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+  // ── SETUP ──
+  const W = (ORBIT + CORNER_SIZE) * 2;
+  const C = W / 2;
+
+  cursor.style.width  = W + 'px';
+  cursor.style.height = W + 'px';
+
+  gsap.set(dot, { top: C, left: C, xPercent: -50, yPercent: -50 });
+  gsap.set(corners[0], { top: C - ORBIT - CORNER_SIZE, left: C - ORBIT - CORNER_SIZE }); // tl
+  gsap.set(corners[1], { top: C - ORBIT - CORNER_SIZE, left: C + ORBIT              }); // tr
+  gsap.set(corners[2], { top: C + ORBIT,               left: C + ORBIT              }); // br
+  gsap.set(corners[3], { top: C + ORBIT,               left: C - ORBIT - CORNER_SIZE }); // bl
 
   gsap.set(cursor, { xPercent: -50, yPercent: -50, x: mouseX, y: mouseY });
+
+  // ── spin ──
+  const createSpin = () => {
+    if (spinTl) spinTl.kill();
+    spinTl = gsap.timeline({ repeat: -1 })
+      .to(cursor, { rotation: '+=360', duration: SPIN_DURATION, ease: 'none' });
+  };
+  createSpin();
 
   // ── helpers ──
   function distToRect(px, py, rect) {
@@ -126,134 +141,119 @@ document.querySelectorAll('.resume-btn, .resume-link').forEach(btn => {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  function getElementCorners(rect) {
+  // x/y offsets for each corner to reach element edges
+  // Uses mouseX/mouseY directly (not lagged gsap cursor position) to avoid jitter
+  function getSnapOffsets(rect, mx, my) {
+    const B = BORDER, CS = CORNER_SIZE, O = ORBIT;
     return [
-      { x: rect.left  - BORDER,               y: rect.top    - BORDER },
-      { x: rect.right + BORDER - CORNER_SIZE,  y: rect.top    - BORDER },
-      { x: rect.right + BORDER - CORNER_SIZE,  y: rect.bottom + BORDER - CORNER_SIZE },
-      { x: rect.left  - BORDER,               y: rect.bottom + BORDER - CORNER_SIZE },
+      { x: rect.left  - B      - mx - (-O - CS), y: rect.top    - B      - my - (-O - CS) }, // tl
+      { x: rect.right + B - CS - mx - ( O     ), y: rect.top    - B      - my - (-O - CS) }, // tr
+      { x: rect.right + B - CS - mx - ( O     ), y: rect.bottom + B - CS - my - ( O     ) }, // br
+      { x: rect.left  - B      - mx - (-O - CS), y: rect.bottom + B - CS - my - ( O     ) }, // bl
     ];
   }
 
-  // ── main orbital ticker ──
-  // runs every frame — drives the spin when idle, does nothing when snapped
-  gsap.ticker.add((time, deltaTime) => {
-    if (isSnapped) return;
-
-    const dt = deltaTime / 1000; // ms → seconds
-    angle += SPIN_SPEED * 2 * Math.PI * dt;
-
-    corners.forEach((c, i) => {
-      const a = angle + OFFSETS[i];
-      const tx = Math.cos(a) * ORBIT_RADIUS - CORNER_SIZE / 2;
-      const ty = Math.sin(a) * ORBIT_RADIUS - CORNER_SIZE / 2;
-      // direct style for performance — no gsap tween overhead in the loop
-      gsap.set(c, { x: tx, y: ty });
-    });
-  });
-
-  // ── snap to element ──
+  // ── snap ──
   function snapTo(el) {
     if (activeTarget === el) return;
     releaseSnap(false);
 
+    // Cancel any pending spin-resume so it can't fire while we're snapped
+    if (resumeTimeout) { clearTimeout(resumeTimeout); resumeTimeout = null; }
+
     activeTarget = el;
     isSnapped    = true;
 
+    gsap.killTweensOf(cursor, 'rotation');
+    spinTl?.pause();
+    gsap.to(cursor, { rotation: 0, duration: 0.2, ease: 'power2.out' });
+
     const rect    = el.getBoundingClientRect();
-    const targets = getElementCorners(rect);
-    const curX    = gsap.getProperty(cursor, 'x');
-    const curY    = gsap.getProperty(cursor, 'y');
+    const offsets = getSnapOffsets(rect, mouseX, mouseY);
 
-    // animate each corner from its current orbital position to element corner
     corners.forEach((c, i) => {
-      gsap.to(c, {
-        x: targets[i].x - curX + CORNER_SIZE,
-        y: targets[i].y - curY + CORNER_SIZE,
-        duration: 0.25,
-        ease: 'power3.out',
-        overwrite: true
-      });
+      gsap.to(c, { x: offsets[i].x, y: offsets[i].y, duration: 0.22, ease: 'power3.out', overwrite: true });
     });
-
-    // keep corners locked to element as cursor drifts inside it
-    if (snapTickerFn) gsap.ticker.remove(snapTickerFn);
-    snapTickerFn = () => {
-      const r  = el.getBoundingClientRect();
-      const t  = getElementCorners(r);
-      const cx = gsap.getProperty(cursor, 'x');
-      const cy = gsap.getProperty(cursor, 'y');
-      corners.forEach((c, i) => {
-        gsap.to(c, {
-          x: t[i].x - cx + CORNER_SIZE,
-          y: t[i].y - cy + CORNER_SIZE,
-          duration: 0.15,
-          ease: 'power1.out',
-          overwrite: 'auto'
-        });
-      });
-    };
-    gsap.ticker.add(snapTickerFn);
   }
 
-  // ── release snap — return to orbit ──
-  function releaseSnap(doReturn = true) {
-    if (snapTickerFn) { gsap.ticker.remove(snapTickerFn); snapTickerFn = null; }
+  // update snapped corners on mousemove (no ticker — avoids jitter)
+  function updateSnap() {
+    if (!isSnapped || !activeTarget) return;
+    const rect    = activeTarget.getBoundingClientRect();
+    const offsets = getSnapOffsets(rect, mouseX, mouseY);
+    corners.forEach((c, i) => {
+      gsap.to(c, { x: offsets[i].x, y: offsets[i].y, duration: 0.12, ease: 'power1.out', overwrite: 'auto' });
+    });
+  }
+
+  // ── release ──
+  function releaseSnap(doResume = true) {
     activeTarget = null;
+    isSnapped    = false;
 
-    if (!doReturn) { isSnapped = false; return; }
-
-    // smoothly return each corner to its current orbital position
-    // we resume the orbital ticker immediately — corners will catch up via gsap.to
-    isSnapped = false;
-
-    corners.forEach((c, i) => {
-      const a  = angle + OFFSETS[i];
-      const tx = Math.cos(a) * ORBIT_RADIUS - CORNER_SIZE / 2;
-      const ty = Math.sin(a) * ORBIT_RADIUS - CORNER_SIZE / 2;
-      gsap.to(c, { x: tx, y: ty, duration: 0.4, ease: 'power3.out', overwrite: true });
+    corners.forEach(c => {
+      gsap.to(c, { x: 0, y: 0, duration: 0.35, ease: 'power3.out', overwrite: true });
     });
+
+    if (!doResume) return;
+
+    if (resumeTimeout) clearTimeout(resumeTimeout);
+    resumeTimeout = setTimeout(() => {
+      // wait for corners to finish returning before spinning again
+      const rot = ((gsap.getProperty(cursor, 'rotation') % 360) + 360) % 360;
+      spinTl?.kill();
+      const remaining = SPIN_DURATION * (1 - rot / 360);
+      gsap.to(cursor, {
+        rotation: rot + 360,
+        duration: remaining > 0.05 ? remaining : SPIN_DURATION,
+        ease: 'none',
+        onComplete: () => createSpin()
+      });
+      resumeTimeout = null;
+    }, 380); // wait for corner return animation (0.35s) to finish
   }
 
-  // ── mousemove — move cursor + proximity check ──
+  // ── mousemove ──
   window.addEventListener('mousemove', e => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-
     gsap.to(cursor, { x: mouseX, y: mouseY, duration: 0.1, ease: 'power3.out' });
 
-    const targets = document.querySelectorAll('.cursor-target');
-    let closest     = null;
-    let closestDist = Infinity;
-
-    targets.forEach(el => {
-      const rect = el.getBoundingClientRect();
-      const dist = distToRect(mouseX, mouseY, rect);
+    // find nearest cursor-target that the dot is actually on (or very close to)
+    const allTargets = document.querySelectorAll('.cursor-target');
+    let closest = null, closestDist = Infinity;
+    allTargets.forEach(el => {
+      const dist = distToRect(mouseX, mouseY, el.getBoundingClientRect());
       if (dist < closestDist) { closestDist = dist; closest = el; }
     });
 
-    if (closest && closestDist <= PROXIMITY) {
+    if (closest && closestDist <= SNAP_THRESHOLD) {
+      // dot is on the element — snap
       snapTo(closest);
-    } else if (isSnapped && closestDist > PROXIMITY + RELEASE_BUFFER) {
+      updateSnap(); // update corner positions on every move while snapped
+    } else if (isSnapped && closestDist > SNAP_THRESHOLD + RELEASE_BUFFER) {
+      // dot has left the element — release
       releaseSnap(true);
+    } else if (isSnapped) {
+      // still snapped, update corner positions
+      updateSnap();
     }
   });
 
-  // ── click effect ──
+  // ── click ──
   window.addEventListener('mousedown', () => {
     gsap.to(dot,    { scale: 0.6, duration: 0.15 });
     gsap.to(cursor, { scale: 0.88, duration: 0.15 });
   });
   window.addEventListener('mouseup', () => {
-    gsap.to(dot,    { scale: 1, duration: 0.3 });
-    gsap.to(cursor, { scale: 1, duration: 0.2 });
+    gsap.to(dot,    { scale: 1,  duration: 0.3  });
+    gsap.to(cursor, { scale: 1,  duration: 0.2  });
   });
 
-  // ── scroll: recheck proximity ──
+  // ── scroll ──
   window.addEventListener('scroll', () => {
     if (!isSnapped || !activeTarget) return;
-    const rect = activeTarget.getBoundingClientRect();
-    const dist = distToRect(mouseX, mouseY, rect);
+    const dist = distToRect(mouseX, mouseY, activeTarget.getBoundingClientRect());
     if (dist > PROXIMITY + RELEASE_BUFFER) releaseSnap(true);
   }, { passive: true });
 

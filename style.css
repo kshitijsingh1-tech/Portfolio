@@ -317,6 +317,7 @@ body { cursor: none; }
   width: 24px; height: 24px;
   pointer-events: none;
   z-index: 99999;
+  overflow: visible;
 }
 
 .target-cursor-dot {
@@ -330,16 +331,16 @@ body { cursor: none; }
 
 .target-cursor-corner {
   position: absolute;
-  width: 12px; height: 12px;
+  width: 8px; height: 8px;
   border-color: var(--accent);
   border-style: solid;
   border-width: 0;
 }
 
-.corner-tl { border-top-width: 3px; border-left-width: 3px; }
-.corner-tr { border-top-width: 3px; border-right-width: 3px; }
-.corner-br { border-bottom-width: 3px; border-right-width: 3px; }
-.corner-bl { border-bottom-width: 3px; border-left-width: 3px; }
+.corner-tl { border-top-width: 2px; border-left-width: 2px; }
+.corner-tr { border-top-width: 2px; border-right-width: 2px; }
+.corner-br { border-bottom-width: 2px; border-right-width: 2px; }
+.corner-bl { border-bottom-width: 2px; border-left-width: 2px; }
 
 @media (hover: none), (max-width: 768px) {
   body { cursor: auto; }
