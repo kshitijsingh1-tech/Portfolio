@@ -307,3 +307,35 @@ main { padding-top: 80px; }
   .project-arrow { display: none; }
   .site-footer { padding: 1.5rem; }
 }
+
+/*edit*/
+.blur-text-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.blur-text-word {
+  display: inline-block;
+  will-change: transform, filter, opacity;
+  opacity: 0;
+}
+
+@keyframes blurInTop {
+  0%   { filter: blur(10px); opacity: 0; transform: translateY(-50px); }
+  50%  { filter: blur(5px);  opacity: 0.5; transform: translateY(5px); }
+  100% { filter: blur(0px);  opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blurInBottom {
+  0%   { filter: blur(10px); opacity: 0; transform: translateY(50px); }
+  50%  { filter: blur(5px);  opacity: 0.5; transform: translateY(-5px); }
+  100% { filter: blur(0px);  opacity: 1; transform: translateY(0); }
+}
+
+.blur-text-word.animate-top {
+  animation: blurInTop 0.7s ease forwards;
+}
+
+.blur-text-word.animate-bottom {
+  animation: blurInBottom 0.7s ease forwards;
+}
