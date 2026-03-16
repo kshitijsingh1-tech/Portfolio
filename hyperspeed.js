@@ -35,6 +35,29 @@ function resizeRendererToDisplaySize(renderer, setSize) {
 
 const nsin = val => Math.sin(val) * 0.5 + 0.5;
 
+// ── COLOR THEMES ─────────────────────────────────────────────────────────────
+const COLORS_DARK = {
+  roadColor:     0x080808,
+  islandColor:   0x0a0a0a,
+  background:    0x000000,
+  shoulderLines: 0xffffff,
+  brokenLines:   0xffffff,
+  leftCars:      [0xd856bf, 0x6750a2, 0xc247ac],
+  rightCars:     [0x03b3c3, 0x0e5ea5, 0x324555],
+  sticks:        0x03b3c3
+};
+
+const COLORS_LIGHT = {
+  roadColor:     0xc8c2b8,
+  islandColor:   0xd4cec4,
+  background:    0xf0ede6,
+  shoulderLines: 0x8a8278,
+  brokenLines:   0x8a8278,
+  leftCars:      [0xe8941a, 0xd4821a, 0xf0a830],
+  rightCars:     [0xc0481e, 0xa03818, 0xe05828],
+  sticks:        0xc0481e
+};
+
 // ── OPTIONS ───────────────────────────────────────────────────────────────────
 const OPTIONS = {
   distortion: 'turbulentDistortion',
@@ -60,16 +83,7 @@ const OPTIONS = {
   carWidthPercentage: [0.3, 0.5],
   carShiftX: [-0.8, 0.8],
   carFloorSeparation: [0, 5],
-  colors: {
-    roadColor: 0x080808,
-    islandColor: 0x0a0a0a,
-    background: 0x000000,
-    shoulderLines: 0xffffff,
-    brokenLines: 0xffffff,
-    leftCars: [0xd856bf, 0x6750a2, 0xc247ac],
-    rightCars: [0x03b3c3, 0x0e5ea5, 0x324555],
-    sticks: 0x03b3c3
-  }
+  colors: COLORS_DARK
 };
 
 // ── DISTORTIONS ───────────────────────────────────────────────────────────────
@@ -651,7 +665,30 @@ class App {
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 const container = document.getElementById('hyperspeed-container');
 if (container) {
-  const options = { ...OPTIONS, distortion: distortions[OPTIONS.distortion] };
-  const app = new App(container, options);
+  const getTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
+
+  const buildOptions = () => ({
+    ...OPTIONS,
+    colors: getTheme() === 'light' ? COLORS_LIGHT : COLORS_DARK,
+    distortion: distortions[OPTIONS.distortion]
+  });
+
+  let app = new App(container, buildOptions());
   app.loadAssets().then(() => app.init());
+
+  // ── live theme switching ──
+  // watch for data-theme attribute changes on <html>
+  const themeObserver = new MutationObserver(() => {
+    // dispose current app and rebuild with new colors
+    app.dispose();
+    // clear any leftover canvas children
+    while (container.firstChild) container.removeChild(container.firstChild);
+    app = new App(container, buildOptions());
+    app.loadAssets().then(() => app.init());
+  });
+
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
 }

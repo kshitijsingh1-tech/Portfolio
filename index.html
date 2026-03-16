@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kshitij Singh — Developer</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script type="importmap">
   {
     "imports": {
@@ -14,6 +15,7 @@
   }
   </script>
   <style>
+    /* dark theme — white text over black road */
     #hero-layer .nav-logo,
     #hero-layer .nav-links a,
     #hero-layer .hero-label,
@@ -37,21 +39,48 @@
     #hero-layer .btn-outline:hover { border-color: #fff; }
     #hero-layer .footer-text { color: rgba(255,255,255,0.35); }
     #hero-layer .site-footer { border-top-color: rgba(255,255,255,0.08); }
+
+    /* light theme — dark text over warm road */
+    [data-theme="light"] #hero-layer .nav-logo,
+    [data-theme="light"] #hero-layer .nav-links a,
+    [data-theme="light"] #hero-layer .hero-label,
+    [data-theme="light"] #hero-layer .hero-name,
+    [data-theme="light"] #hero-layer .hero-tagline,
+    [data-theme="light"] #hero-layer .hero-scroll { color: #1a1916; }
+    [data-theme="light"] #hero-layer .nav-logo span { color: #c0481e; }
+    [data-theme="light"] #hero-layer nav {
+      background: rgba(240, 237, 230, 0.75);
+      border-bottom-color: rgba(26,25,22,0.1);
+    }
+    [data-theme="light"] #hero-layer .theme-toggle {
+      color: rgba(26,25,22,0.6);
+      border-color: rgba(26,25,22,0.2);
+    }
+    [data-theme="light"] #hero-layer .theme-toggle:hover { color: #1a1916; border-color: #1a1916; }
+    [data-theme="light"] #hero-layer .btn-primary { background: #1a1916; color: #f7f6f2; }
+    [data-theme="light"] #hero-layer .btn-primary:hover { background: #c0481e; }
+    [data-theme="light"] #hero-layer .btn-outline {
+      color: #1a1916;
+      border-color: rgba(26,25,22,0.3);
+    }
+    [data-theme="light"] #hero-layer .btn-outline:hover { border-color: #1a1916; }
+    [data-theme="light"] #hero-layer .footer-text { color: rgba(26,25,22,0.4); }
+    [data-theme="light"] #hero-layer .site-footer { border-top-color: rgba(26,25,22,0.1); }
   </style>
 </head>
 <body>
   <div id="hyperspeed-container" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;"></div>
   <div id="hero-layer" style="position:relative;z-index:1;">
     <nav>
-      <a href="index.html" class="nav-logo">K<span>.</span>S</a>
+      <a href="index.html" class="nav-logo cursor-target">K<span>.</span>S</a>
       <ul class="nav-links">
-        <li><a href="about.html">About</a></li>
-        <li><a href="projects.html">Projects</a></li>
-        <li><a href="skills.html">Skills</a></li>
+        <li><a href="about.html" class="cursor-target">About</a></li>
+        <li><a href="projects.html" class="cursor-target">Projects</a></li>
+        <li><a href="skills.html" class="cursor-target">Skills</a></li>
       </ul>
       <div class="nav-actions">
-        <!-- <button class="theme-toggle" aria-label="Toggle theme">●</button> -->
-        <a href="#" class="resume-btn">Resume</a>
+        <button class="theme-toggle cursor-target" aria-label="Toggle theme">●</button>
+        <a href="#" class="resume-btn cursor-target">Resume</a>
       </div>
     </nav>
     <main>
@@ -64,8 +93,8 @@
           in love with learning
         </p>
         <div class="hero-cta">
-          <a href="projects.html" class="btn-primary">View My Work</a>
-          <a href="about.html" class="btn-outline">About Me</a>
+          <a href="projects.html" class="btn-primary cursor-target">View My Work</a>
+          <a href="about.html" class="btn-outline cursor-target">About Me</a>
         </div>
         <div class="hero-scroll" style="position:absolute;">scroll</div>
       </section>
