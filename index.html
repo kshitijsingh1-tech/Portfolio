@@ -5,50 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kshitij Singh — Developer</title>
   <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "postprocessing": "https://unpkg.com/postprocessing@6.36.3/build/index.js"
+    }
+  }
+  </script>
 </head>
 <body>
 
-  <nav>
-    <a href="index.html" class="nav-logo">K<span>.</span>S</a>
-    <ul class="nav-links">
-      <li><a href="about.html">About</a></li>
-      <li><a href="projects.html">Projects</a></li>
-      <li><a href="skills.html">Skills</a></li>
-    </ul>
-    <div class="nav-actions">
-      <button class="theme-toggle" aria-label="Toggle theme">●</button>
-      <a href="#" class="resume-btn">Resume</a>
-    </div>
-  </nav>
+  <!-- LAYER 1: 3D background -->
+  <div id="hyperspeed-container" style="
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  "></div>
 
-  <main>
-    <section class="hero" style="position:relative;">
-      <p class="hero-label">// Developer &amp; AI Enthusiast</p>
-      <!-- Animate by words, from top (default) -->
-<h1 data-blur-text data-blur-by="words" data-blur-dir="top" data-blur-delay="120">
-  Kshitij Singh
-</h1>
+  <!-- LAYER 2: everything else on top -->
+  <div style="position: relative; z-index: 1;">
 
-<!-- Animate by characters, from bottom -->
-<p data-blur-text data-blur-by="chars" data-blur-dir="bottom" data-blur-delay="60">
-  in love with learning
-</p>
-      <p class="hero-tagline">"in love with learning"</p>
-      <div class="hero-cta">
-        <a href="projects.html" class="btn-primary">View My Work</a>
-        <a href="about.html" class="btn-outline">About Me</a>
-      </div>
-      <div class="hero-scroll" style="position:absolute;">scroll</div>
-    </section>
-  </main>
+    <nav> ... </nav>
 
-  <footer>
-    <div class="site-footer">
-      <span class="footer-text">© 2025 Kshitij Singh</span>
-      <span class="footer-text">Built with HTML · CSS · JS</span>
-    </div>
-  </footer>
+    <main>
+      <section class="hero" style="position:relative;">
+        <p class="hero-label">// Developer &amp; AI Enthusiast</p>
+
+        <h1 class="hero-name" data-blur-text data-blur-by="words" 
+            data-blur-dir="top" data-blur-delay="120">
+          Kshitij Singh
+        </h1>
+
+        <p class="hero-tagline" data-blur-text data-blur-by="words"
+           data-blur-dir="bottom" data-blur-delay="80">
+          in love with learning
+        </p>
+
+        <div class="hero-cta">
+          <a href="projects.html" class="btn-primary">View My Work</a>
+          <a href="about.html" class="btn-outline">About Me</a>
+        </div>
+        <div class="hero-scroll" style="position:absolute;">scroll</div>
+      </section>
+    </main>
+
+    <footer> ... </footer>
+
+  </div>
 
   <script src="script.js"></script>
+  <script type="module" src="hyperspeed.js"></script>
 </body>
 </html>
