@@ -1,22 +1,3 @@
-// ── THEME ──
-const html = document.documentElement;
-const saved = localStorage.getItem('ks-theme') || 'light';
-html.setAttribute('data-theme', saved);
-
-const toggle = document.querySelector('.theme-toggle');
-if (toggle) {
-  updateIcon(saved);
-  toggle.addEventListener('click', () => {
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('ks-theme', next);
-    updateIcon(next);
-  });
-}
-
-function updateIcon(theme) {
-  if (toggle) toggle.textContent = theme === 'dark' ? '○' : '●';
-}
 
 // ── ACTIVE NAV ──
 const current = window.location.pathname.split('/').pop() || 'index.html';
