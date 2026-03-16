@@ -91,7 +91,7 @@ function initBlurText() {
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
       el.querySelectorAll('.blur-text-word').forEach((span, i) => {
-        span.style.animationDelay = `${(i * delay) / 1000}s`;
+        span.style.animationDelay = `${(i * delay) / 800}s`;
         span.classList.add(direction === 'top' ? 'animate-top' : 'animate-bottom');
       });
       observer.unobserve(el);
